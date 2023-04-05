@@ -50,6 +50,13 @@ app.delete("/jokes/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    const existingJoke = await Joke.findByPk(id);
+    if (!existingJoke) {
+      const error = new Error("Joke not found");
+      error.status = 404;
+      throw error;
+    }
+
     await Joke.destroy({
       where: {
         id: id,
@@ -66,6 +73,14 @@ app.put("/jokes/:id", async (req, res, next) => {
   try {
     const { joke, tags } = req.body;
     const { id } = req.params;
+
+    const existingJoke = await Joke.findByPk(id);
+    if (!existingJoke) {
+      const error = new Error("Joke not found");
+      error.status = 404;
+      throw error;
+    }
+
     await Joke.update(
       { joke: joke, tags: tags },
       {
@@ -74,11 +89,7 @@ app.put("/jokes/:id", async (req, res, next) => {
         },
       }
     );
-    const updatedJoke = await Joke.findOne({
-      where: {
-        id: id,
-      },
-    });
+    const updatedJoke = await Joke.findByPk(id);
     res.status(201).send(updatedJoke);
   } catch (error) {
     console.error(error);
